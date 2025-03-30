@@ -7,23 +7,23 @@ type BlogFormValues = {
     title: string;
     publicationDate: string;
     category: string;
-    subCategory: string;  // FIXED: Changed from string[] to string
-    travelTags: string;   // FIXED: Changed from string[] to string
+    subCategory: string;  
+    travelTags: string;   
     summary: string;
     content: string;
-    images: File[] | null; // FIXED: FileList can't be used directly
+    images: File[] | null; 
   };
   
   const BlogForm = () => {
-    const { register, handleSubmit, control, setValue, watch } =
+    const { register, handleSubmit, control, setValue, watch,reset } =
       useForm<BlogFormValues>({
         defaultValues: {
           author: "",
           title: "",
           publicationDate: "",
           category: "",
-          subCategory: "",   // FIXED: Default to empty string
-          travelTags: "",    // FIXED: Default to empty string
+          subCategory: "",  
+          travelTags: "",    
           summary: "",
           content: "",
           images: null,
@@ -51,6 +51,7 @@ type BlogFormValues = {
       },
       onSuccess: () => {
         alert("Blog published successfully!");
+        reset()
       },
     });
   
