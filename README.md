@@ -66,6 +66,59 @@ This endpoint is used to delete a blog post by its ID.
   - `404 Not Found` if the blog post is not found.
   - `500 Internal Server Error` for any errors during processing.
 
+
+### **Get All Blogs** (`GET /api/blogs`)  
+This endpoint retrieves a list of all blog posts.  
+
+- **Response:**  
+  - `200 OK` on successful retrieval.  
+  - `500 Internal Server Error` if fetching fails.  
+
+- **Example Response:**  
+  ```json
+  [
+    {
+      "id": "1",
+      "title": "Sample Blog",
+      "author": "John Doe",
+      "summary": "This is a short summary",
+      "publicationDate": "2025-03-31",
+      "category": "Travel",
+      "subCategory": "Adventure",
+      "travelTags": "Beach",
+      "imageUrl": "https://cloudinary.com/sample.jpg"
+    }
+  ]
+  ```  
+
+---
+
+### **Get Single Blog Post** (`GET /api/blogs/:id`)  
+This endpoint retrieves a specific blog post by its ID.  
+
+- **Response:**  
+  - `200 OK` on successful retrieval.  
+  - `404 Not Found` if the blog post does not exist.  
+  - `500 Internal Server Error` for any errors during processing.  
+
+- **Example Response:**  
+  ```json
+  {
+    "id": "1",
+    "title": "Sample Blog",
+    "author": "John Doe",
+    "summary": "This is a short summary",
+    "content": "This is the full blog content.",
+    "publicationDate": "2025-03-31",
+    "category": "Travel",
+    "subCategory": "Adventure",
+    "travelTags": "Beach",
+    "imageUrls": [
+      "https://cloudinary.com/image1.jpg",
+      "https://cloudinary.com/image2.jpg"
+    ]
+  }
+  ```
 ## **Frontend**
 
 ### **Blog Form Component**
