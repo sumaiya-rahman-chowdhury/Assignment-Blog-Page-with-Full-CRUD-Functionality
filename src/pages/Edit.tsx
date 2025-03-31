@@ -1,61 +1,93 @@
+import { useParams } from "react-router-dom";
+import { useQuery } from "@tanstack/react-query";
 import { useForm, Controller } from "react-hook-form";
-import { useMutation } from "@tanstack/react-query";
-import { useState } from "react";
+import { useEffect } from "react";
 
-export type BlogFormValues = {
-  author: string;
-  title: string;
-  publicationDate: string;
-  category: string;
-  subCategory: string;
-  travelTags: string;
-  summary: string;
-  content: string;
-  images: FileList | null; 
+
+const fetchBlog = async (id: string) => {
+  const res = await fetch(
+    `https://blog-backend-eight-olive.vercel.app/api/blogs/${id}`
+  );
+  if (!res.ok) throw new Error("Failed to fetch blog");
+  return res.json();
 };
 
-const BlogForm = () => {
-  const { register, handleSubmit, control, watch, reset } =
-    useForm<BlogFormValues>();
+function Edit() {
+  const { id } = useParams();
+  if (!id) {
+    return <div className="text-center py-12">Invalid blog ID</div>;
+  }
+  const {
+    data: blogData,
+    isLoading,
+    isError,
+    error,
+  } = useQuery({
+    queryKey: ["blogData", id],
+    queryFn: () => fetchBlog(id),
+  });
+  const {
+    register,
+    handleSubmit,
+    control,
+    reset,
+  } = useForm({
+    defaultValues: {
+      author: "",
+      title: "",
+      publicationDate: "",
+      category: "",
+      subCategory: "",
+      travelTags: "",
+      summary: "",
+      content: "",
+      images: FileList,
 
-  const [preview, setPreview] = useState<BlogFormValues | null>(null);
-
-  const mutation = useMutation({
-    mutationFn: async (data: BlogFormValues) => {
-      const formData = new FormData();
-
-      Object.entries(data).forEach(([key, value]) => {
-        if (key === "images" && value instanceof FileList) {
-          Array.from(value).forEach((file) => formData.append("images", file));
-        } else if (typeof value === "string") {
-          formData.append(key, value);
-        }
-      });
-
-      const response = await fetch(`${import.meta.env.VITE_BASE_API}blogs/post`, {
-        method: "POST",
-        body: formData,
-      });
-
-      if (!response.ok) {
-        throw new Error("Failed to publish blog.");
-      }
-
-      return response.json();
-    },
-    onSuccess: () => {
-      alert("Blog published successfully!");
-      reset();
-    },
-    onError: (error) => {
-      alert(error.message || "Something went wrong.");
     },
   });
+  useEffect(() => {
+    if (blogData) {
+      reset(blogData); 
+    }
+  }, [blogData, reset]);
 
+  if (isLoading) return <div className="text-center py-12">Loading...</div>;
+  if (isError)
+    return (
+      <div className="text-center py-12 text-red-500">
+        Error: {error.message}
+      </div>
+    );
+  console.log(blogData);
+  const onSubmit = async (data: any) => {
+    console.log(data);
+    try {
+      const response = await fetch(
+        `https://blog-backend-eight-olive.vercel.app/api/blogs/${id}`,
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(data),
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error("Failed to update blog");
+      }
+
+      const updatedBlog = await response.json();
+
+      console.log("Blog updated successfully:", updatedBlog);
+    } catch (error) {
+      console.error("Error updating blog:", error);
+    }
+  };
   return (
-    <div className=" mx-auto bg-blue-100 p-6 rounded-md shadow-md w-full">
+    <main>
       <form
-        onSubmit={handleSubmit((data) => mutation.mutate(data))}
+        onSubmit={handleSubmit(onSubmit)}
         className="space-y-4 w-[80%] m-auto"
       >
         <h2 className="text-lg font-bold mb-4">Blog Form</h2>
@@ -158,6 +190,13 @@ const BlogForm = () => {
             className="border-[1px] border-blue-900 px-[50px] py-[10px] rounded-md h-[149px]"
           />
         </div>
+        <div className="img flex w-25 h-30 gap-5">
+          {blogData?.imageUrls &&
+            blogData?.imageUrls.map((url: string) => {
+              return <img src={url} alt="" />;
+            })}
+         
+        </div>
         {/* Image Upload */}
         <div className="flex items-center gap-5">
           <label htmlFor="">Main Content</label>
@@ -170,24 +209,6 @@ const BlogForm = () => {
           />
         </div>
 
-        {/* Preview & Autosave */}
-        <div className="flex gap-2 pt-20 w-full justify-center pb-5">
-          <button
-            type="button"
-            className="bg-gray-300 px-4 py-2 rounded-full"
-            onClick={() => setPreview(watch())}
-          >
-            Preview
-          </button>
-          <button
-            type="button"
-            className="bg-gray-300 px-4 py-2 rounded-full"
-            onClick={() => console.log("Autosaving...")}
-          >
-            Autosave
-          </button>
-        </div>
-
         {/* Publish Button */}
         <div className="flex w-full justify-center">
           <button
@@ -198,24 +219,8 @@ const BlogForm = () => {
           </button>
         </div>
       </form>
-
-      {/* Preview Section */}
-      {preview && (
-        <div className="mt-6 p-4 border rounded-md bg-gray-100">
-          <h3 className="font-bold text-lg">Preview</h3>
-          <p>
-            <strong>Title:</strong> {preview.title}
-          </p>
-          <p>
-            <strong>Summary:</strong> {preview.summary}
-          </p>
-          <p>
-            <strong>Content:</strong> {preview.content}
-          </p>
-        </div>
-      )}
-    </div>
+    </main>
   );
-};
+}
 
-export default BlogForm;
+export default Edit;

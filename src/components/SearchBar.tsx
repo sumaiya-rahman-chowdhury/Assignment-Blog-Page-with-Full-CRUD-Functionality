@@ -6,13 +6,20 @@ interface DropdownOption {
   label: string;
   options: string[];
 }
+interface SearchBarProps {
+  setCategory: (category: string | undefined) => void;
+  setSubCategory: (subCategory: string | undefined) => void;
+}
 
 const dropdowns: DropdownOption[] = [
   { label: "Destination", options: ["USA", "UK", "Canada"] },
   { label: "Category", options: ["Tech", "Travel", "Food"] },
-  { label: "Sub-Category", options: ["AI", "Blockchain", "Cybersecurity"] },
+  {
+    label: "Sub-Category",
+    options: ["AI", "Blockchain", "Cybersecurity", "Adventure", "Cultural"],
+  },
 ];
-const SearchBar = () => {
+const SearchBar = ({ setSubCategory, setCategory }: SearchBarProps) => {
   const [openDropdown, setOpenDropdown] = useState<string | null>(null);
   const [selectedValues, setSelectedValues] = useState<{
     [key: string]: string;
@@ -24,7 +31,13 @@ const SearchBar = () => {
 
   const handleSelect = (label: string, value: string) => {
     setSelectedValues((prev) => ({ ...prev, [label]: value }));
-    setOpenDropdown(null); // Close dropdown
+    setOpenDropdown(null);
+    if (label === "Category") {
+      setCategory(value);
+    }
+    if (label === "Sub-Category") {
+      setSubCategory(value);
+    }
   };
   return (
     <div className=" p-4 rounded-lg ">
